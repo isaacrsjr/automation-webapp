@@ -79,3 +79,57 @@
         auth_kind: "{{ gcp_cred_kind }}"
         service_account_file: "{{ gcp_cred_file }}"
         state: present
+
+    - name: Aguardando SSH da VM
+      wait_for:
+        host: "{{ address.address }}"
+        port: 22
+        delay: 10
+
+    - name: Cadastrar VM no inventario
+      add_host:
+        hostname: "{{ address.address }}"
+        groupname: webs
+  
+- name: Configuração da nova VM para a aplicacao python
+  hosts: webs
+  tasks:
+    - name: Rodando teste do hostname na VM
+      shell: hostname
+      register: saida
+    - name: Exibindo saida do teste
+      debug:
+        var: saida
+  
+    - name: Instalando Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+
+    - name: Atualizando pacotes
+      apt:
+        update_cache: true
+
+    - name: Instalando pip
+      apt:
+        name:
+          - python-pip
+          - python3-pip
+        state: latest
+
+    - name: Instalar dependências
+      pip:
+        name: 
+          - docker
+        
+    - name: Criando container da aplicacao python
+      docker_container:
+        name: app-web-python
+        image: "isaacrsjr/app-web"
+        state: started
+        recreate: true
+        published_ports:
+          - 80:80
+
+
+
