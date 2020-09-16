@@ -66,8 +66,8 @@
             ports:
               - "80"
         network: "{{ network }}"
-        source_ranges:
-          - "0.0.0.0/0"
+        target_tags:
+          - allow-http
         project: "{{ gcp_project }}"
         auth_kind: "{{ gcp_cred_kind }}"
         service_account_file: "{{ gcp_cred_file }}"
@@ -88,6 +88,9 @@
               - name: External NAT
                 nat_ip: "{{ address }}"
                 type: ONE_TO_ONE_NAT
+        tags:
+          items:
+            - allow-http
         zone: "{{zone}}"
         project: "{{gcp_project}}"
         auth_kind: "{{ gcp_cred_kind }}"
