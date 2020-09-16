@@ -2,6 +2,7 @@
 - name: Criação de máquina para aplicação python
   hosts: localhost
   connection: local
+  gather_facts: false
 
   vars:
     gcp_project: isaac-engenharia-de-redes
@@ -13,7 +14,20 @@
     aluno: "isaac-sartori"
 
   tasks:
-    - name: create a disk
+    - name: Instalando pip
+      apt:
+        name:
+          - python-pip
+          - python3-pip
+        state: latest
+
+    - name: Instalar dependências
+      pip:
+        name: 
+          - requests
+          - google-auth
+
+    - name: Criando disco da VM
       gcp_compute_disk:
         name: "disk-{{aluno}}"
         size_gb: 20
@@ -25,16 +39,16 @@
         state: present
       register: disk
 
-    - name: get info on a network
+    - name: Obtendo informações de rede
       gcp_compute_network_info:
         filters:
           - name = default
-        pproject: "{{ gcp_project }}"
+        project: "{{ gcp_project }}"
         auth_kind: "{{ gcp_cred_kind }}"
         service_account_file: "{{ gcp_cred_file }}"
       register: network
 
-    - name: create a address
+    - name: Criando endereço externo
       gcp_compute_address:
         name: "address-{{aluno}}"
         region: "{{region}}"
@@ -44,7 +58,7 @@
         state: present
       register: address
 
-    - name: create a instance
+    - name: Criando instância da VM
       gcp_compute_instance:
         name: "{{vm_name}}"
         machine_type: n2-standard-2
